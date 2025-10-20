@@ -1,0 +1,35 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(readr)
+```
+
+```{r}
+path_bc = "SampleToBarcode.txt"
+path_reads = "BarcodeToReads.txt"
+```
+
+```{r}
+bc = read_tsv(path_bc)
+reads = read_tsv(path_reads) 
+
+reads.per.sample= inner_join(bc,reads,by="Sample") %>% select(InternalID,Sample,total)
+
+```
+
+```{r}
+head(reads.per.sample)
+```
+
+```{r}
+write_tsv(x = reads.per.sample,file="reads_per_sample_multiqc_VoolstraB728S.txt")
+```
+
+```{r}
+head(bc)
+```
+
