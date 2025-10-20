@@ -1,0 +1,71 @@
+---
+title: "Additional indices"
+output: html_document
+date: "2025-08-12"
+authos: "Andrea Borbon-Garcia"
+---
+```{r}
+library(tidyverse)
+```
+
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir="Q:/MK/ag_ncct/_Andrea Borbón/R_DataAnalysis/")
+setwd("Q:/MK/ag_ncct/_Andrea Borbón/R_DataAnalysis/")
+```
+
+###Function to map Well indices to the well_set mapping file
+This function takes a map of wells from the additional_indices_mapping.xlsx and fills in the reads by sample from the demultiplexing run 
+The well_map must be in the format "Well01_SetA"
+```{r}
+getAdditionalIndices = function(well_map_path,readcounts_path,output_path){
+  
+  well_map = read_tsv(well_map_path)
+ 
+  readcounts = read_tsv(readcounts_path) %>% 
+    select(Sample,total) %>% 
+    filter(str_detect(Sample,"Well")) %>% 
+    rename(Well_Set="Sample") 
+
+  output_table = well_map %>%
+                  left_join(readcounts)
+  
+  write_tsv(output_table,output_path)
+  
+  print("Results exported to $output_path")
+  return(output_table)
+}
+```
+
+##Specify filepaths
+Set the filepaths of the Wells mapping file ()and read counts by sample (output from multiqc)
+```{r Input filepaths}
+#Change path_readsbysample with your actual multiqc_bcl2fastq_bysample path
+path_wells_map = "Well_set.txt"
+path_readsbysample = "Z:/2307-Voolstra/ITS_16s/Batch7/ITS/250728_demultiplex_B7ITS2custom_nextseq_ver2/multiqc/multiqc_data/multiqc_bcl2fastq_bysample.txt"
+```
+#Run the function
+```{r}
+getAdditionalIndices(path_wells_map,path_readsbysample,"additionalindices_voolstranextseq.txt")
+```
+
+###To DO: add options if more than one read count file is provided)
+```{r}
+getAdditionalIndice_multipleinputs = function(well_map_path,readcounts_path,output_path){
+  
+  well_map = read_tsv(well_map_path)
+ 
+  readcounts = read_tsv(readcounts_path) %>% 
+    select(Sample,total) %>% 
+    filter(str_detect(Sample,"Well")) %>% 
+    rename(Well_Set="Sample") 
+
+  output_table = well_map %>%
+                  left_join(readcounts)
+  
+  write_tsv(output_table,output_path)
+  
+  print("Results exported to $output_path")
+  return(output_table)
+}
+```
