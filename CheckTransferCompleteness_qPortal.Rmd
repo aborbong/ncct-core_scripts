@@ -47,14 +47,23 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
                   filter(str_detect(name, paste0("_",target_date,"\\d{6}_"))) %>%
                   mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
   
+  #Get the total of files in each location
+  n_files_ncct = nrow(demultiplexed_files)
+  n_files_qportal = nrow(transfer_qportal)
+  
+  #Print a message with the total files in ncct and qPortal
+  message(n_files_ncct," files are present in the source folder at NCCT")
+  message(n_files_qportal, " files are successfully transferred to the qPortal")
+  
   #Find missing samples in the qPortal (only present in ncct demultiplex results)
   missing_samples = setdiff(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)
+  total_samples = length(intersect(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename))
   
   #Print message
   if(length(missing_samples)==0){
-    message("✅  All samples for transfer date ",transfer_date," are present in the qPortal")}
+    message("✅  All ", total_samples, " files for transfer date ",transfer_date," are present in the qPortal")}
   else{
-    message("⚠️  The following samples are missing in the qPortal for transfer date",transfer_date,":")
+    message("⚠️  Only", total_samples, "were transferred to the qPortal. The following files are missing in the qPortal for transfer date",transfer_date,":")
     print(missing_samples)
     
   }
