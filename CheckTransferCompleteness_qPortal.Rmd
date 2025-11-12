@@ -7,31 +7,12 @@ date: "2025-10-29"
 
 
 ```{r}
-library(readr)
-library(dplyr)
-library(stringr)
-```
-
-```{r}
-
-transfer_date = "20251027"
-
-qportal_report_filepath = "../data_transfer_checkup/NCCT_VOOLSTRA_Q2181_Raw_Data_.tsv"
-  
-demultiplexed_files_filepath = "Z:/2307-Voolstra/ITS_16s/Batch7/16S/16S_standard/251027_results-demultiplex-16Sstandard/M45K6/NA/demultiplexed_files.txt"
-
-```
-
-
-```{r}
-
-
 checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepath,transfer_date) {
 
   #load libraries
-  library(readr)
-  library(dplyr)
-  library(stringr)  
+  suppressMessages(library(readr))
+  suppressMessages(library(dplyr))
+  suppressMessages(library(stringr))
   
   #Import files and rename columns
   qportal_report = suppressMessages(
@@ -44,12 +25,15 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   
   #filter files by transfer date and create a column with the ncct filename
   transfer_qportal = qportal_report %>%
-                  filter(str_detect(name, paste0("_",target_date,"\\d{6}_"))) %>%
+                  filter(str_detect(name, paste0("_",transfer_date,"\\d{6}_"))) %>%
                   mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
   
   #Get the total of files in each location
   n_files_ncct = nrow(demultiplexed_files)
+  print(n_files_ncct)
+  
   n_files_qportal = nrow(transfer_qportal)
+  print(n_files_qportal)
   
   #Print a message with the total files in ncct and qPortal
   message(n_files_ncct," files are present in the source folder at NCCT")
@@ -63,7 +47,7 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   if(length(missing_samples)==0){
     message("✅  All ", total_samples, " files for transfer date ",transfer_date," are present in the qPortal")}
   else{
-    message("⚠️  Only", total_samples, "were transferred to the qPortal. The following files are missing in the qPortal for transfer date",transfer_date,":")
+    message("⚠️  Only ", total_samples, " were transferred to the qPortal. The following files are missing in the qPortal for transfer date ",transfer_date,":")
     print(missing_samples)
     
   }
@@ -74,7 +58,17 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
  
 ```
 
+
 ```{r}
+#Test dataset- Transfer 16S standard
+transfer_date = "20251027"
+
+qportal_report_filepath = "../data_transfer_checkup/251112_NCCT_VOOLSTRA_Q2181_Raw_Data.tsv"
+  
+demultiplexed_files_filepath = "Z:/2307-Voolstra/ITS_16s/Batch7/16S/16S_standard/251027_results-demultiplex-16Sstandard/M45K6/NA/demultiplexed_files.txt"
+
 checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_date)
 ```
+
+
 
