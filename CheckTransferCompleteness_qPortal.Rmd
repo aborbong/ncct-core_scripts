@@ -64,7 +64,7 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
 transfer_date = "20251027"
 
 qportal_report_filepath = "../data_transfer_checkup/251112_NCCT_VOOLSTRA_Q2181_Raw_Data.tsv"
-  
+    
 demultiplexed_files_filepath = "Z:/2307-Voolstra/ITS_16s/Batch7/16S/16S_standard/251027_results-demultiplex-16Sstandard/M45K6/NA/demultiplexed_files.txt"
 
 checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_date)
