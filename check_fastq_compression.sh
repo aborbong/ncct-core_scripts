@@ -21,17 +21,22 @@ for i in "$dir"/*; do
     if [[ "$i" == *.fastq.gz || "$i" == *.fq.gz ]]; then
         if ! gzip -t "$i" 2>/dev/null; then
             echo "Corrupted file detected: $i" >> "$corrupted_out"
-            INVALID_COUNT=((INVALID_COUNT + 1))
+            ((INVALID_COUNT++))
+           
+        else
+            echo "Valid file: $i" >> "$valid_out"
+	     ((VALID_COUNT++))
             
-            else
-                VALID_COUNT=((VALID_COUNT + 1))
-                echo "Valid file: $i" >> "$valid_out"   
-            fi
-        fi
-    done
+	fi
+
+    fi
+
+done
+
     echo "Valid compressed FASTQ files: $VALID_COUNT"
     echo "Invalid compressed FASTQ files: $INVALID_COUNT"
-exit 0
+
+    exit 0
 
             
     
