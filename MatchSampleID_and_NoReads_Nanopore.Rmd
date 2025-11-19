@@ -1,0 +1,40 @@
+---
+title: "Match SampleID to reads stats"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(readr)
+```
+
+```{r}
+path_bc = "BarcodeToSample_Clavel.txt"
+path_nanostat = "Clavel_multiqc_nanostat.txt"
+```
+
+```{r}
+bc = read_tsv(path_bc)
+
+reads = read_tsv(path_reads) %>%
+  mutate(Sample= str_remove_all(Sample,"_pass"))
+
+reads.per.sample= inner_join(bc,reads,by="Sample")%>% 
+  rename(Output_Gb = 'Total bases_fastq') %>% 
+  mutate(Output_Gb = Output_Gb/(10^6)) %>% 
+  select(InternalID,Sample,'Number of reads_fastq','Read length N50_fastq', 'Output_Gb') 
+
+```
+
+```{r}
+head(reads.per.sample)
+```
+
+```{r}
+write_tsv(x = reads.per.sample,file="reads_per_sample_multiqc_ClavelNanopore_B6.txt")
+```
+
+```{r}
+head(bc)
+```
+
