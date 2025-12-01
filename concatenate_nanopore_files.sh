@@ -1,7 +1,7 @@
 #!/bin/bash
 
 INPUT_FOLDER_PASS="/mnt/promdata/2510-Clavel-Batch6-WP1-ONT/2510-Clavel-Batch6-WP1-ONT/20251113_1414_1F_PBI55105_d9ba2691/fastq_pass/"
-INPUT_FOLDER_FAIL="/mnt/promdata/2510-Clavel-Batch6-WP1-ONT/2510-Clavel-Batch6-WP1-ONT/20251113_1414_1F_PBI55105_d9ba2691/fastq_pass/"
+INPUT_FOLDER_FAIL="/mnt/promdata/2510-Clavel-Batch6-WP1-ONT/2510-Clavel-Batch6-WP1-ONT/20251113_1414_1F_PBI55105_d9ba2691/fastq_fail/"
 OUTPUT_FOLDER="$PWD/251117_fastq_supAcc"
 
 
@@ -91,7 +91,7 @@ for i in $INPUT_FOLDER_FAIL/barcode*/; do
 done
 
 #Print finish time
-log_message "Process for fail files finished at $(date) 
+log_message "Process for fail files finished at $(date)" 
 
 
 
