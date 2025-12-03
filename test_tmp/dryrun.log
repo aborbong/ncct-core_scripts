@@ -1,0 +1,41 @@
+==== SCRIPT START Wed Dec  3 09:37:27 CET 2025 ====
+==== SCRIPT START Wed Dec  3 09:40:26 CET 2025 ====
+---- START tmp/FilesTransfer_0.txt at Wed Dec  3 09:40:26 CET 2025 ----
+---- END tmp/FilesTransfer_0.txt at Wed Dec  3 09:40:26 CET 2025 ----
+Duration for tmp/FilesTransfer_0.txt: 0 seconds
+
+DRYRUN: would sleep 10 minutes between batches
+---- START tmp/FilesTransfer_aa at Wed Dec  3 09:40:26 CET 2025 ----
+DRYRUN: would copy 'sample_R1.fastq.gz' to ~/datamover/data/incoming
+DRYRUN: would copy 'sample_R2.fastq.gz' to ~/datamover/data/incoming
+---- END tmp/FilesTransfer_aa at Wed Dec  3 09:40:26 CET 2025 ----
+Duration for tmp/FilesTransfer_aa: 0 seconds
+
+DRYRUN: would sleep 10 minutes between batches
+---- START tmp/FilesTransfer_ab at Wed Dec  3 09:40:26 CET 2025 ----
+DRYRUN: would copy 'sample_R3.fastq.gz' to ~/datamover/data/incoming
+---- END tmp/FilesTransfer_ab at Wed Dec  3 09:40:26 CET 2025 ----
+Duration for tmp/FilesTransfer_ab: 0 seconds
+
+==== SCRIPT END Wed Dec  3 09:40:26 CET 2025 ====
+Total duration: 0 seconds
+==== SCRIPT START Wed Dec  3 09:41:21 CET 2025 ====
+---- START tmp/FilesTransfer_0.txt at Wed Dec  3 09:41:21 CET 2025 ----
+---- END tmp/FilesTransfer_0.txt at Wed Dec  3 09:41:21 CET 2025 ----
+Duration for tmp/FilesTransfer_0.txt: 0 seconds
+
+DRYRUN: would sleep 10 minutes between batches
+---- START tmp/FilesTransfer_aa at Wed Dec  3 09:41:21 CET 2025 ----
+DRYRUN: would copy 'sample_R1.fastq.gz' to ~/datamover/data/incoming
+DRYRUN: would copy 'sample_R2.fastq.gz' to ~/datamover/data/incoming
+---- END tmp/FilesTransfer_aa at Wed Dec  3 09:41:21 CET 2025 ----
+Duration for tmp/FilesTransfer_aa: 0 seconds
+
+DRYRUN: would sleep 10 minutes between batches
+---- START tmp/FilesTransfer_ab at Wed Dec  3 09:41:22 CET 2025 ----
+DRYRUN: would copy 'sample_R3.fastq.gz' to ~/datamover/data/incoming
+---- END tmp/FilesTransfer_ab at Wed Dec  3 09:41:22 CET 2025 ----
+Duration for tmp/FilesTransfer_ab: 0 seconds
+
+==== SCRIPT END Wed Dec  3 09:41:22 CET 2025 ====
+Total duration: 1 seconds
