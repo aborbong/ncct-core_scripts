@@ -32,9 +32,6 @@ for file in VoolstraTransfer0*; do
 
 done
 
-global_end=$(date +%s)
-global_dur=$((global_end - global_start))
-
 echo "==== SCRIPT END $(date) ====" | tee -a "$LOGFILE"
 echo "Total duration: ${global_dur} seconds" | tee -a "$LOGFILE"
 
