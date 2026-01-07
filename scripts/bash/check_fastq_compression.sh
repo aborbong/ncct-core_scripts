@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
+set -euo pipefail #Enable exiting the pipeline if any command fails
+
 #Usage: check_fastq_compression <directory> <corrupted_output_file> <valid_output_file>
+
 
 dir="$1"
 corrupted_out="${2:-corrupted_fastq_files.txt}"
@@ -35,6 +38,13 @@ done
 
     echo "Valid compressed FASTQ files: $VALID_COUNT"
     echo "Invalid compressed FASTQ files: $INVALID_COUNT"
+
+if [[ "$INVALID_COUNT"-gt 0 ]]; then
+    echo "Corrupted files detected. Data transfer aborted" 
+else
+    echo "Starting data transfer to datamover"
+fi 
+
 
     exit 0
 
