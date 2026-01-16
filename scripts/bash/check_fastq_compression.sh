@@ -55,7 +55,7 @@ INVALID_COUNT=0
 VALID_COUNT=0
 
 ## Check if directory has files
-shopt -s nullglob 
+shopt -s nocaseglob 
 files=("$dir"/*)
 if [[ ${#files[@]} -eq 0 ]]; then
     echo "No files found in the directory $dir"
@@ -63,7 +63,7 @@ if [[ ${#files[@]} -eq 0 ]]; then
 fi
 
 for i in "$dir"/*; do
-    # Match common FASTQ gzip extensions (case-sensitive). Adjust or enable nocaseglob if needed.
+    # Match common FASTQ gzip extensions (case-insensitive).
     if [[ "$i" == *.fastq.gz || "$i" == *.fq.gz ]]; then
         if ! gzip -t "$i" 2>/dev/null; then
             echo "Corrupted file detected: $i" >> "$corrupted_out"
