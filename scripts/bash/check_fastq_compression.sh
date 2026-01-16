@@ -1,68 +1,105 @@
 #!/usr/bin/env bash
 set -euo pipefail #Enable exiting the pipeline if any command fails
 
-#Usage: check_fastq_compression <directory> <corrupted_output_file> <valid_output_file> <check_compression_command>
+#Usage: check_fastq_compression.sh [--skip-check|-s] <directory> <corrupted_output_file> <valid_output_file>
+#
+# Options:
+#   --skip-check, -s   Skip the gzip compression checks and report success (useful for debugging or force-transfer)
 
+## Optional flag to skip the compression check
+SKIP_CHECK=0
+if [[ "${1:-}" == "--skip-check" || "${1:-}" == "-s" ]]; then
+    SKIP_CHECK=1
+    shift
+fi
 
-dir="$1" # Directory to check
-corrupted_out="${2:-corrupted_fastq_files.txt}" # Default to corrupted_fastq_files.txt in the specified directory
-valid_out="${3:-valid_fastq_files.txt}" # Default to valid_fastq_files.txt in the specified directory
-check_compression="${4:-TRUE}" # Command to check compression integrity, default to TRUE
+# Read args with safe defaults
+dir="${1:-}"
+corrupted_out="${2:-corrupted_fastq_files.txt}"
+valid_out="${3:-valid_fastq_files.txt}"
 
-INVALID_COUNT=0 
+## Validate arguments
+if [[ -z "$dir" ]]; then #check if dir is empty
+    echo "Usage: $0 [--skip-check|-s] <directory> [corrupted_output_file] [valid_output_file]" >&2
+    exit 2
+fi
+
+if [[ ! -d "$dir" ]]; then
+    echo "Error: directory '$dir' does not exist or is not a directory." >&2
+    exit 2
+fi
+
+## If  SKIP_CHECK is set, skip the compression checks and start the data transfer
+if [[ $SKIP_CHECK -eq 1 ]]; then
+    echo "Skipping compression checks for directory: $dir"
+    echo "Starting data transfer to datamover"
+    
+    # Start data copy process
+    for i in "$dir"/*; do 
+        echo "Transferring file: $i"
+       # Copy statement
+       if [[ $i == *.fastq.gz || $i == *.fq.gz ]]; then
+           cp "$i" ~/datamover/data/incoming/
+           echo "File transferred: $i" >> transferred_files.log
+       fi   
+    done
+    exit 0
+fi
+
+# Truncate/create output files so we don't append to previous runs
+: > "$corrupted_out"
+: > "$valid_out"
+
+## Initialize counters
+INVALID_COUNT=0
 VALID_COUNT=0
 
 ## Check if directory has files
-
 shopt -s nullglob 
 files=("$dir"/*)
-if [ ${#files[@]} -eq 0 ]; then
+if [[ ${#files[@]} -eq 0 ]]; then
     echo "No files found in the directory $dir"
     exit 1
 fi
 
-## Check if compression check is enabled
-
-if [ "$check_compression" == "TRUE" ]; then
-    echo "Starting gzip integrity check in directory: $dir"
-
-## Iterate over files in the directory to check gzip integrity
-    for i in "$dir"/*; do 
-        if [[ "$i" == *.fastq.gz || "$i" == *.fq.gz ]]; then # Only check .fastq.gz or .fq.gz files
-            if ! gzip -t "$i" 2>/dev/null; then # Test gzip integrity, suppress error output
-            echo "Corrupted file detected: $i" >> "$corrupted_out" # Log corrupted file
-            ((INVALID_COUNT++)) # Increment invalid count
-           
+for i in "$dir"/*; do
+    # Match common FASTQ gzip extensions (case-sensitive). Adjust or enable nocaseglob if needed.
+    if [[ "$i" == *.fastq.gz || "$i" == *.fq.gz ]]; then
+        if ! gzip -t "$i" 2>/dev/null; then
+            echo "Corrupted file detected: $i" >> "$corrupted_out"
+            ((INVALID_COUNT++))
         else
-            echo "Valid file: $i" >> "$valid_out" # Log valid file
-	        ((VALID_COUNT++)) # Increment valid count
-
+            echo "Valid file: $i" >> "$valid_out"
+            ((VALID_COUNT++))
         fi
+    fi
+done
 
-    done
+echo "Valid compressed FASTQ files: $VALID_COUNT"
+echo "Invalid compressed FASTQ files: $INVALID_COUNT"
 
-## Print summary report
-    echo "FASTQ Compression Check Summary:" 
-    echo "Valid compressed FASTQ files: $VALID_COUNT" 
-    echo "Invalid compressed FASTQ files: $INVALID_COUNT" 
-    echo "Detailed logs written to $corrupted_out and $valid_out"
-
-    exit 0
-
-
+# Start data transfer only if no corrupted files were found
+if [[ $INVALID_COUNT -gt 0 ]]; then
+    echo "Corrupted files detected. Data transfer aborted"
 else
-    echo "Compression check is disabled. Starting data transfer to datamover"
+    echo "Starting data transfer to datamover"
+
     # Start data copy process
     for i in "$dir"/*; do 
         echo "Transferring file: $i"
-        # Copy statement
-        cp "$i" ~/datamover/data/incoming/
-        echo "File transferred: $i" > log_transfer.txt
+       # Copy statement
+       if [[ $i == *.fastq.gz || $i == *.fq.gz ]]; then
+           cp "$i" ~/datamover/data/incoming/
+           echo "File transferred: $i" >> transferred_files.log
+       fi   
     done
+    exit 0
+fi
+
+exit 0
 
 
 
 
 
-            
-    
+
