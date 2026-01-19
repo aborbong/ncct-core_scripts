@@ -1,8 +1,10 @@
 #!/bin/bash
 
-INPUT_FOLDER_PASS="/mnt/promdata/2510-Clavel-Batch6-WP1-ONT/2510-Clavel-Batch6-WP1-ONT/20251113_1414_1F_PBI55105_d9ba2691/fastq_pass/"
-INPUT_FOLDER_FAIL="/mnt/promdata/2510-Clavel-Batch6-WP1-ONT/2510-Clavel-Batch6-WP1-ONT/20251113_1414_1F_PBI55105_d9ba2691/fastq_fail/"
-OUTPUT_FOLDER="$PWD/251117_fastq_supAcc"
+#Usage: ./concatenate_nanopore_files.sh </path/fo/fastq_pass> </path/to/fastq_faill> <output_folder>
+
+INPUT_FOLDER_PASS="$1"
+INPUT_FOLDER_FAIL="$2"
+OUTPUT_FOLDER="$3"
 
 
 mkdir -p $OUTPUT_FOLDER
@@ -47,7 +49,7 @@ for i in $INPUT_FOLDER_PASS/barcode*/; do
 	total_duration=$((finish_time - start_time))
 
 	#Print duration	
-	log_message "Finished processing barcode: $barcode in $total_duration seconds"
+	log_message "Finished processing barcode: $barcode in $total_duration seconds" 
 
 done
 
