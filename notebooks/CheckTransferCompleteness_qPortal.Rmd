@@ -54,7 +54,17 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   #Find missing files in the qPortal (only present in ncct demultiplex results)
   missing_files = setdiff(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)
   total_files = length(intersect(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename))
-  
+
+  #Find duplicated files in the qPortal
+  duplicated_files = transfer_qportal %>%
+                      group_by(ncct_filename) %>%
+                      filter(n()>1) %>%
+                      distinct(ncct_filename) %>%
+                      pull(ncct_filename)
+  if(length(duplicated_files)>0){
+    message("⚠️  The following files are duplicated in the qPortal for transfer date ",transfer_date,":")
+    print(duplicated_files)
+
   #Print message
   if(length(missing_files)==0){
     message("✅  All ", total_files, " files for transfer date ",transfer_date," are present in the qPortal")}
