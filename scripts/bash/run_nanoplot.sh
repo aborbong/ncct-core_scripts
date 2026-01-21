@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-INPUT_FOLDER="251117_fastq_supAcc/"
+#Usage ./run_nanoplot.sh <INPUT_FOLDER>
+#Example: ./run_nanoplot.sh 251117_fastq_supAcc
+#
+
+INPUT_FOLDER="$1"
 
 echo -e "sample\telapsed_seconds" > timelog.tsv
 
