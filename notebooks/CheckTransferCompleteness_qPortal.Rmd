@@ -22,18 +22,32 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   demultiplexed_files = suppressMessages(
     read_tsv(demultiplexed_files_filepath,col_names = "ncct_filename")
   )
-  
-  #filter files by transfer date and create a column with the ncct filename
-  transfer_qportal = qportal_report %>%
-                  filter(str_detect(name, paste0("_",transfer_date,"\\d{6}_"))) %>%
-                  mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
+  #Evaluate if a single date or a data range is provided
+  if(str_detect(transfer_date,"-")){
+    date_range = str_split(transfer_date,"-")[[1]]
+    start_date = date_range[1]
+    end_date = date_range[2]
+    #filter files by transfer date range and create a column with the ncct filename
+    transfer_qportal = qportal_report %>%
+                    filter(str_detect(name, paste0("_(",paste0(start_date,"|",end_date),")\\d{6}_"))) %>%
+                    mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
+  }
+  else{
+    #single date provided
+    transfer_date = transfer_date
+    #filter files by transfer date and create a column with the ncct filename
+    transfer_qportal = qportal_report %>%
+                    filter(str_detect(name, paste0("_",transfer_date,"\\d{6}_"))) %>%
+                    mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
+
+  }
   
   #Get the total of files in each location
   n_files_ncct = nrow(demultiplexed_files)
   
   n_files_qportal = nrow(transfer_qportal)
   
-  #Print a message with the total files in ncct and qPortal
+  #Print a message with the total of local files (NCCT) and the qPortal
   message(n_files_ncct," files are present in the source folder at NCCT")
   message(n_files_qportal, " files are successfully transferred to the qPortal")
   
