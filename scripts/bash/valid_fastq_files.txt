@@ -1,0 +1,3 @@
+Valid file: ../../test_data/fastq_files/ERR1256713_1.fastq.gz
+Valid file: ../../test_data/fastq_files/ERR1256713_2.fastq.gz
+Valid file: ../../test_data/fastq_files/ERR1256714_1.fastq.gz
