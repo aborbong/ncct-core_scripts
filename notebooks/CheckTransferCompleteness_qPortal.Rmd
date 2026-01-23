@@ -8,26 +8,38 @@ date: "2025-10-29"
 
 ```{r}
 checkup_transfer = function(qportal_report_filepath, 
-                              demultiplexed_files_filepath, 
-                              transfer_date, 
+                              demultiplexed_files_filepath = NULL, 
+                              transfer_date = NULL, 
                               log_dir = ".", 
                               qbic_barcode_prefix = NULL,
                               ncct_input_folder = NULL){ 
 
-  #load libraries
+  ##load libraries
   suppressMessages(library(readr))
   suppressMessages(library(dplyr))
   suppressMessages(library(stringr))
   
-  #Import files and rename columns
+  message("Using QBIC barcode prefix: ",qbic_barcode_prefix)
+  message("Using input folder: ",ncct_input_folder)
+
+  ## List files in the ncct input folder if provided, select only those with the qbic barcode prefix and .fastq.fz or .fq.gz extension
+  if(is.null(demultiplexed_files_filepath)) {
+    demultiplexed_files = data.frame(ncct_filename = list.files(ncct_input_folder,pattern = paste0("^",qbic_barcode_prefix,"*fastq.gz$|^",qbic_barcode_prefix,"*fg.gz$")))
+    print(head(demultiplexed_files))
+  }
+  else {
+    #Import list of demultiplexed files and rename columns
+    demultiplexed_files = suppressMessages(
+      read_tsv(demultiplexed_files_filepath,col_names = "ncct_filename")
+    )
+  }
+
+  ## Import qportal .tsv report and rename columns
   qportal_report = suppressMessages(
     read_tsv(qportal_report_filepath)
   )
   
-  demultiplexed_files = suppressMessages(
-    read_tsv(demultiplexed_files_filepath,col_names = "ncct_filename")
-  )
-  #Evaluate if a single date or a data range is provided
+  ## Evaluate if a single date or a data range is provided
   if(str_detect(transfer_date,"-")){
     date_range = str_split(transfer_date,"-")[[1]]
     start_date = date_range[1]
@@ -48,35 +60,36 @@ checkup_transfer = function(qportal_report_filepath,
 
   
   
-  #Get the total of files in each location
+  ## Get the total of files in each location
   n_files_ncct = nrow(demultiplexed_files)
   
   n_files_qportal = nrow(transfer_qportal)
   
-  #Print a message with the total of local files (NCCT) and the qPortal
+  ## Print a message with the total of local files (NCCT) and the qPortal
   message("Files present in the source folder at NCCT: ",n_files_ncct)
   message("Files successfully transferred to the qPortal: ",n_files_qportal)
   
-  #Find missing files in the qPortal (only present in ncct demultiplex results)
+  ## Find missing files in the qPortal (only present in ncct demultiplex results)
   missing_files = setdiff(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)
   total_files = length((intersect(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)))
   total_unique_files = length(unique(transfer_qportal$ncct_filename))
+  total_unique_files_names = unique(transfer_qportal$ncct_filename)
 
-  #Find duplicated files in the qPortal
+  ##Find duplicated files in the qPortal
   duplicated_files = transfer_qportal %>%
                       group_by(ncct_filename) %>%
                       filter(n()>1) %>%
                       distinct(ncct_filename) %>%
                       pull(ncct_filename)
 
-# Calculate elapsed time between files reaching QBic and being shown in the qPortal
+## Calculate elapsed time between files reaching QBic and being shown in the qPortal
 
 
-# Print summary message for duplicated files
+## Print summary message for duplicated files
   if(length(duplicated_files)>0){
     message("Total of unique files in the qPortal for transfer date ",transfer_date,": ", total_unique_files)
     message("⚠️  Duplicated files found in the qPortal for transfer date ",transfer_date,": ", length(duplicated_files))
-    message("Duplicates files are written to: ", log_dir,file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date)),"_duplicates.txt")
+    message("Duplicates files are written to: ",log_dir)# log_dir,file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date)),"_duplicates.txt")
     #print(duplicated_files)
   } else {
     message("Total unique files in qPortal for transfer date ",transfer_date,": ", total_unique_files)
@@ -93,7 +106,7 @@ checkup_transfer = function(qportal_report_filepath,
     
   }
 
-  #Prepare logging: ensure log directory exists and write summary + lists
+  ## Prepare logging: ensure log directory exists and write summary + lists
   if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
   timestamp <- format(Sys.time(), "%Y%m%d")
   log_base <- file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date))
@@ -111,14 +124,20 @@ checkup_transfer = function(qportal_report_filepath,
   log_lines <- c(log_lines, paste0(duplicated_files, collapse = ", "))
   log_lines <- c(log_lines, paste0("Missing files in the qPortal: ", paste0(missing_files, collapse = ", ")))
 
-  #Write output table 
-  output_table <- data.frame(
-    "File Name" = c(duplicated_files, missing_files),
-    "Status" = c(rep("Duplicated", length(duplicated_files)), rep("Missing", length(missing_files)))
+  ## Write output table 
+  output_table <- (
+    "File Name" = c(duplicated_files, missing_files,total_unique_files_names),
+    "Status" = c(rep("Duplicated", length(duplicated_files)), 
+                  rep("Missing", length(missing_files)),
+                  rep("Unique",length(total_unique_files_names)))
   )
-  write.table(output_table, file = file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date,"_output.txt")), sep = "\t", row.names = FALSE)
+  write.table(output_table, 
+              file = file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date,"_output.txt")), 
+              sep = "\t",  
+              row.names = FALSE,
+              quote = FALSE)
   
-  # write log files
+  ## write log files
   writeLines(log_lines, con = log_file)
   if (length(missing_files) > 0) writeLines(missing_files, con = missing_file_out) else writeLines(character(0), con = missing_file_out)
   if (length(duplicated_files) > 0) writeLines(duplicated_files, con = dup_file_out) else writeLines(character(0), con = dup_file_out)
@@ -153,16 +172,18 @@ checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_d
 ```
 
 ```{r}
-#Test dataset- Transfer 16S standard - Duplicates
-#demultiplexed_files_filepath = "Z:/2307-Voolstra/ITS_16s/Batch7/16S/16S_standard/251027_results-demultiplex-16Sstandard/M45K6/NA/demultiplexed_files.txt"
+# Test adding arguments for qbic barcode prefix and ncct input folder
 # Change working directory to the notebook location
 #setwd("/Users/mustermann/Documents/NCCT/Git_ncct/ncct-core_scripts/notebooks/")
-
-transfer_date = "20251027"
 
 qportal_report_filepath = "../test_data/251112_NCCT_VOOLSTRA_Q2181_Raw_Data_duplicates.tsv"
     
 demultiplexed_files_filepath = "../test_data/demultiplexed_files.txt"
 
-checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_date, log_dir = "test_output/")
-
+checkup_transfer(qportal_report_filepath,
+                  demultiplexed_files_filepath = demultiplexed_files_filepath,
+                  transfer_date = "20251027", 
+                  log_dir = "test_output/",
+                  qbic_barcode_prefix = "Q2181",
+                  ncct_input_folder = "../test_data/fastq_transfer/"
+                  )
