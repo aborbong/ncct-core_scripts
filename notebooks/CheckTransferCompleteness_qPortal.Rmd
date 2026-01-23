@@ -31,8 +31,7 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
     transfer_qportal = qportal_report %>%
                     filter(str_detect(name, paste0("_(",paste0(start_date,"|",end_date),")\\d{6}_"))) %>%
                     mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
-  }
-  else{
+  } else{
     #single date provided
     transfer_date = transfer_date
     #filter files by transfer date and create a column with the ncct filename
@@ -41,6 +40,8 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
                     mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
 
   }
+
+  
   
   #Get the total of files in each location
   n_files_ncct = nrow(demultiplexed_files)
@@ -48,8 +49,8 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   n_files_qportal = nrow(transfer_qportal)
   
   #Print a message with the total of local files (NCCT) and the qPortal
-  message(n_files_ncct," files are present in the source folder at NCCT")
-  message(n_files_qportal, " files are successfully transferred to the qPortal")
+  message("Files present in the source folder at NCCT: ",n_files_ncct)
+  message("Files successfully transferred to the qPortal: ",n_files_qportal)
   
   #Find missing files in the qPortal (only present in ncct demultiplex results)
   missing_files = setdiff(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)
@@ -63,34 +64,49 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
                       distinct(ncct_filename) %>%
                       pull(ncct_filename)
 
-  if(length(duplicated_files)>0){
-    message(" Total unique files in qPortal for transfer date ",transfer_date,": ", total_unique_files)
-    message("⚠️  The following files are duplicated in the qPortal for transfer date ",transfer_date,":")
-    print(duplicated_files)
-  else {
-    message(" Total unique files in qPortal for transfer date ",transfer_date,": ", total_unique_files)
-    message("✅  No duplicated files found in the qPortal for transfer date ",transfer_date)
-    }
-    # duplicates will also be written to a log file below
+# Calculate elapsed time between files reaching QBic and being shown in the qPortal
 
-  } 
+
+# Print summary message for duplicated files
+  if(length(duplicated_files)>0){
+    message("Total of unique files in the qPortal for transfer date ",transfer_date,": ", total_unique_files)
+    message("⚠️  Duplicated files found in the qPortal for transfer date ",transfer_date,": ", length(duplicated_files))
+    message("Duplicates files are written to: ", log_dir,file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date)),"_duplicates.txt")
+    #print(duplicated_files)
+  } else {
+    message("Total unique files in qPortal for transfer date ",transfer_date,": ", total_unique_files)
+    message("✅  No duplicated files found in the qPortal for transfer date ",transfer_date)
+  }
+
+    #Print summary message for number of transferred files
+  if(length(missing_files)==0){
+    message("✅  All ", total_files, " files for transfer date ",transfer_date," are present in the qPortal")}
+  else{
+    message("⚠️  Only ", total_files, " were transferred to the qPortal. The following files are missing in the qPortal for transfer date ",transfer_date,":")
+    print(missing_files)
+    
+    
+  }
 
   #Prepare logging: ensure log directory exists and write summary + lists
   if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
-  timestamp <- format(Sys.time(), "%Y%m%d-%H%M%S")
-  log_base <- file.path(log_dir, paste0("checkup_transfer_", transfer_date, "_", timestamp))
+  timestamp <- format(Sys.time(), "%Y%m%d")
+  log_base <- file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date))
   log_file <- paste0(log_base, ".log")
   missing_file_out <- paste0(log_base, "_missing.txt")
   dup_file_out <- paste0(log_base, "_duplicates.txt")
 
+
   log_lines <- character()
   log_lines <- c(log_lines, paste0("Transfer Completeness report: ", Sys.time()))
   log_lines <- c(log_lines, paste0("Source local files (NCCT): ", n_files_ncct))
-  log_lines <- c(log_lines, paste0("Transferred files to qPortal: ", n_files_qportal))
+  log_lines <- c(log_lines, paste0("Transferred files to the qPortal: ", n_files_qportal))
   log_lines <- c(log_lines, paste0("Valid unique files: ", total_files))
-  log_lines <- c(log_lines, paste0("Duplicated in qPortal: ", paste0(duplicated_files, collapse = ", ")))
-  log_lines <- c(log_lines, paste0("Missing in qPortal: ", paste0(missing_files, collapse = ", ")))
+  log_lines <- c(log_lines, paste0("Duplicated files in the qPortal: "))
+  log_lines <- c(log_lines, paste0(duplicated_files, collapse = ", "))
+  log_lines <- c(log_lines, paste0("Missing files in the qPortal: ", paste0(missing_files, collapse = ", ")))
 
+  
   # write log files
   writeLines(log_lines, con = log_file)
   if (length(missing_files) > 0) writeLines(missing_files, con = missing_file_out) else writeLines(character(0), con = missing_file_out)
@@ -101,15 +117,7 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   message("  ", missing_file_out)
   message("  ", dup_file_out)
 
-  #Print message
-  if(length(missing_files)==0){
-    message("✅  All ", total_files, " files for transfer date ",transfer_date," are present in the qPortal")}
-  else{
-    message("⚠️  Only ", total_files, " were transferred to the qPortal. The following files are missing in the qPortal for transfer date ",transfer_date,":")
-    print(missing_files)
-    
-    
-  }
+
 
 }
 
@@ -121,12 +129,29 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
 ```{r}
 #Test dataset- Transfer 16S standard
 #demultiplexed_files_filepath = "Z:/2307-Voolstra/ITS_16s/Batch7/16S/16S_standard/251027_results-demultiplex-16Sstandard/M45K6/NA/demultiplexed_files.txt"
+# Change working directory to the notebook location
+setwd("/Users/mustermann/Documents/NCCT/Git_ncct/ncct-core_scripts/notebooks/")
 
 transfer_date = "20251027"
 
-qportal_report_filepath = "data/251112_NCCT_VOOLSTRA_Q2181_Raw_Data.tsv"
+qportal_report_filepath = "../test_data/251112_NCCT_VOOLSTRA_Q2181_Raw_Data.tsv"
     
-demultiplexed_files_filepath = "data/demultiplexed_files.txt"
+demultiplexed_files_filepath = "../test_data/demultiplexed_files.txt"
 
 checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_date)
 ```
+
+```{r}
+#Test dataset- Transfer 16S standard - Duplicates
+#demultiplexed_files_filepath = "Z:/2307-Voolstra/ITS_16s/Batch7/16S/16S_standard/251027_results-demultiplex-16Sstandard/M45K6/NA/demultiplexed_files.txt"
+# Change working directory to the notebook location
+#setwd("/Users/mustermann/Documents/NCCT/Git_ncct/ncct-core_scripts/notebooks/")
+
+transfer_date = "20251027"
+
+qportal_report_filepath = "../test_data/251112_NCCT_VOOLSTRA_Q2181_Raw_Data_duplicates.tsv"
+    
+demultiplexed_files_filepath = "../test_data/demultiplexed_files.txt"
+
+checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_date, log_dir = "test_output/")
+
