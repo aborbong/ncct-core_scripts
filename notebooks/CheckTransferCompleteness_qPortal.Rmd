@@ -7,7 +7,7 @@ date: "2025-10-29"
 
 
 ```{r}
-checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepath,transfer_date) {
+checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepath, transfer_date, log_dir = ".") {
 
   #load libraries
   suppressMessages(library(readr))
@@ -53,7 +53,8 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   
   #Find missing files in the qPortal (only present in ncct demultiplex results)
   missing_files = setdiff(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)
-  total_files = length(intersect(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename))
+  total_files = length((intersect(demultiplexed_files$ncct_filename, transfer_qportal$ncct_filename)))
+  total_unique_files = length(unique(transfer_qportal$ncct_filename))
 
   #Find duplicated files in the qPortal
   duplicated_files = transfer_qportal %>%
@@ -61,9 +62,44 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
                       filter(n()>1) %>%
                       distinct(ncct_filename) %>%
                       pull(ncct_filename)
+
   if(length(duplicated_files)>0){
+    message(" Total unique files in qPortal for transfer date ",transfer_date,": ", total_unique_files)
     message("⚠️  The following files are duplicated in the qPortal for transfer date ",transfer_date,":")
     print(duplicated_files)
+  else {
+    message(" Total unique files in qPortal for transfer date ",transfer_date,": ", total_unique_files)
+    message("✅  No duplicated files found in the qPortal for transfer date ",transfer_date)
+    }
+    # duplicates will also be written to a log file below
+
+  } 
+
+  #Prepare logging: ensure log directory exists and write summary + lists
+  if (!dir.exists(log_dir)) dir.create(log_dir, recursive = TRUE)
+  timestamp <- format(Sys.time(), "%Y%m%d-%H%M%S")
+  log_base <- file.path(log_dir, paste0("checkup_transfer_", transfer_date, "_", timestamp))
+  log_file <- paste0(log_base, ".log")
+  missing_file_out <- paste0(log_base, "_missing.txt")
+  dup_file_out <- paste0(log_base, "_duplicates.txt")
+
+  log_lines <- character()
+  log_lines <- c(log_lines, paste0("Transfer Completeness report: ", Sys.time()))
+  log_lines <- c(log_lines, paste0("Source local files (NCCT): ", n_files_ncct))
+  log_lines <- c(log_lines, paste0("Transferred files to qPortal: ", n_files_qportal))
+  log_lines <- c(log_lines, paste0("Valid unique files: ", total_files))
+  log_lines <- c(log_lines, paste0("Duplicated in qPortal: ", paste0(duplicated_files, collapse = ", ")))
+  log_lines <- c(log_lines, paste0("Missing in qPortal: ", paste0(missing_files, collapse = ", ")))
+
+  # write log files
+  writeLines(log_lines, con = log_file)
+  if (length(missing_files) > 0) writeLines(missing_files, con = missing_file_out) else writeLines(character(0), con = missing_file_out)
+  if (length(duplicated_files) > 0) writeLines(duplicated_files, con = dup_file_out) else writeLines(character(0), con = dup_file_out)
+
+  message("Logs written:")
+  message("  ", log_file)
+  message("  ", missing_file_out)
+  message("  ", dup_file_out)
 
   #Print message
   if(length(missing_files)==0){
