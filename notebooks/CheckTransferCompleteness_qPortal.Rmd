@@ -7,7 +7,12 @@ date: "2025-10-29"
 
 
 ```{r}
-checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepath, transfer_date, log_dir = ".") {
+checkup_transfer = function(qportal_report_filepath, 
+                              demultiplexed_files_filepath, 
+                              transfer_date, 
+                              log_dir = ".", 
+                              qbic_barcode_prefix = NULL,
+                              ncct_input_folder = NULL){ 
 
   #load libraries
   suppressMessages(library(readr))
@@ -106,6 +111,12 @@ checkup_transfer = function(qportal_report_filepath, demultiplexed_files_filepat
   log_lines <- c(log_lines, paste0(duplicated_files, collapse = ", "))
   log_lines <- c(log_lines, paste0("Missing files in the qPortal: ", paste0(missing_files, collapse = ", ")))
 
+  #Write output table 
+  output_table <- data.frame(
+    "File Name" = c(duplicated_files, missing_files),
+    "Status" = c(rep("Duplicated", length(duplicated_files)), rep("Missing", length(missing_files)))
+  )
+  write.table(output_table, file = file.path(log_dir, paste0(timestamp,"_checkup_transfer_", transfer_date,"_output.txt")), sep = "\t", row.names = FALSE)
   
   # write log files
   writeLines(log_lines, con = log_file)
