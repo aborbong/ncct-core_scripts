@@ -19,8 +19,10 @@ checkup_transfer = function(qportal_report_filepath,
   suppressMessages(library(dplyr))
   suppressMessages(library(stringr))
   
+  # Print used parameters for input files
   message("Using QBIC barcode prefix: ",qbic_barcode_prefix)
   message("Using input folder: ",ncct_input_folder)
+  message("Using qPortal report file: ", qportal_report_filepath)
 
   ## List files in the ncct input folder if provided, select only those with the qbic barcode prefix and .fastq.fz or .fq.gz extension
   if(is.null(demultiplexed_files_filepath)) {
@@ -117,6 +119,10 @@ checkup_transfer = function(qportal_report_filepath,
 
   log_lines <- character()
   log_lines <- c(log_lines, paste0("Transfer Completeness report: ", Sys.time()))
+  log_lines <- c(log_lines, paste0("Transfer date: ", transfer_date))
+  log_lines <- c(log_lines, paste0("QBIC barcode prefix: ", qbic_barcode_prefix))
+  log_lines <- c(log_lines, paste0("Input folder: ", ncct_input_folder))
+  log_lines <- c(log_lines, paste0("qPortal report file: ", qportal_report_filepath))
   log_lines <- c(log_lines, paste0("Source local files (NCCT): ", n_files_ncct))
   log_lines <- c(log_lines, paste0("Transferred files to the qPortal: ", n_files_qportal))
   log_lines <- c(log_lines, paste0("Valid unique files: ", total_files))
@@ -125,7 +131,7 @@ checkup_transfer = function(qportal_report_filepath,
   log_lines <- c(log_lines, paste0("Missing files in the qPortal: ", paste0(missing_files, collapse = ", ")))
 
   ## Write output table 
-  output_table <- (
+  output_table <- data.frame(
     "File Name" = c(duplicated_files, missing_files,total_unique_files_names),
     "Status" = c(rep("Duplicated", length(duplicated_files)), 
                   rep("Missing", length(missing_files)),
@@ -183,7 +189,7 @@ demultiplexed_files_filepath = "../test_data/demultiplexed_files.txt"
 checkup_transfer(qportal_report_filepath,
                   demultiplexed_files_filepath = demultiplexed_files_filepath,
                   transfer_date = "20251027", 
-                  log_dir = "test_output/",
+                  log_dir = "test_output",
                   qbic_barcode_prefix = "Q2181",
                   ncct_input_folder = "../test_data/fastq_transfer/"
                   )
