@@ -192,12 +192,16 @@ server <- function(input, output, session){
     if(!r$success) return(paste0("Error: ", r$message))
     res <- r$res
     paste0(
+      "Transfer Completeness Summary:\n",
+      "-----------------------------------\n",
+      "Transfer date: ", input$transfer_date, "\n",    
       "Files present in the source folder at NCCT: ", res$n_files_ncct, "\n",
       "Files successfully transferred to the qPortal: ", res$n_files_qportal, "\n",
       "Valid unique files: ", res$total_files, "\n",
       "Duplicated files found: ", length(res$duplicated_files), "\n",
       "Missing files found: ", length(res$missing_files), "\n",
-      "Logs written to: ", paste(unlist(res$log_paths), collapse = ", ")
+      "Logs written to:\n", 
+      " ",paste(unlist(res$log_paths), collapse = ", ")
     )
   })
 
