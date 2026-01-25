@@ -127,7 +127,7 @@ checkup_transfer = function(qportal_report_filepath,
   log_lines <- c(log_lines, paste0("Transferred files to the qPortal: ", n_files_qportal))
   log_lines <- c(log_lines, paste0("Valid unique files: ", total_files))
   log_lines <- c(log_lines, paste0("Duplicated files in the qPortal: "))
-  log_lines <- c(log_lines, paste0(duplicated_files, collapse = ", "))
+  log_lines <- c(log_lines, paste0(duplicated_files, sep = "\n"))
   log_lines <- c(log_lines, paste0("Missing files in the qPortal: ", paste0(missing_files, collapse = ", ")))
 
   ## Write output table 
