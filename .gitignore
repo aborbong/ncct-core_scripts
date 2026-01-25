@@ -49,3 +49,13 @@ po/*~
 rsconnect/
 
 .DS_Store
+notebooks/test_output/checkup_transfer_20251027_20260123-160925_duplicates.txt
+notebooks/test_output/checkup_transfer_20251027_20260123-160925_missing.txt
+notebooks/test_output/checkup_transfer_20251027_20260123-160925.log
+notebooks/test_output/20260125_checkup_transfer_20251027_duplicates.txt
+notebooks/test_output/20260125_checkup_transfer_20251027_missing.txt
+notebooks/test_output/20260125_checkup_transfer_20251027_output.txt
+notebooks/test_output/20260125_checkup_transfer_20251027.log
+notebooks/test_output/checkup_transfer_20251027_20260123-160925_duplicates.txt
+notebooks/test_output/checkup_transfer_20251027_20260123-160925_missing.txt
+notebooks/test_output/checkup_transfer_20251027_20260123-160925.log
