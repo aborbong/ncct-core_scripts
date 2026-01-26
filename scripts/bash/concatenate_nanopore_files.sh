@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail #Enable exiting the pipeline if any command fails
 
 #Usage: ./concatenate_nanopore_files.sh </path/fo/fastq_pass> </path/to/fastq_faill> <output_folder> <mapping_file> [log_file]
 
