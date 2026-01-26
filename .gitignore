@@ -49,9 +49,9 @@ po/*~
 rsconnect/
 
 .DS_Store
+<<<<<<< HEAD
 
-#Test data
+#Test output data
 notebooks/test_output/*
 test_data/fastq_transfer/*
-
-
+test_data/nanopore_test/test_output/*
