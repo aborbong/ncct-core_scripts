@@ -49,4 +49,9 @@ po/*~
 rsconnect/
 
 .DS_Store
+
+#Test data
 notebooks/test_output/*
+test_data/fastq_transfer/*
+
+
