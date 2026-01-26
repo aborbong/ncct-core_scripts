@@ -39,8 +39,8 @@ for i in $INPUT_FOLDER_PASS/barcode*/; do
 	#Print start time
 	start_time=$(date +%s)
 
-	#Concatenate files
-	zcat $i/*fastq.gz > "$OUTPUT_FOLDER/${barcode}_pass.fastq.gz"
+	#Concatenate files & recomrpess in parallel
+	zcat $i/*fastq.gz | pigz -p 8 -c > "$OUTPUT_FOLDER/${barcode}_pass.fastq.gz"
 	
 	#Print finish time
 	finish_time=$(date +%s)
@@ -54,7 +54,7 @@ for i in $INPUT_FOLDER_PASS/barcode*/; do
 done
 
 #Print finish time
-log_message "Process for pass files finished at $(date)"
+log_message "Process for pass fastq files finished at $(date)"
 
 
 ######----------------------------
@@ -79,7 +79,7 @@ for i in $INPUT_FOLDER_FAIL/barcode*/; do
         start_time=$(date +%s)
 
         #Concatenate files
-        zcat $i/*fastq.gz > "$OUTPUT_FOLDER/${barcode}_fail.fastq.gz"
+        zcat $i/*fastq.gz | pigz -p 8 -c > "$OUTPUT_FOLDER/${barcode}_fail.fastq.gz"
 
         #Print finish time
         finish_time=$(date +%s)
@@ -93,7 +93,7 @@ for i in $INPUT_FOLDER_FAIL/barcode*/; do
 done
 
 #Print finish time
-log_message "Process for fail files finished at $(date)" 
+log_message "Process for fail fastq files finished at $(date)" 
 
 
 
