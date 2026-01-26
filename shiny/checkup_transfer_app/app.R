@@ -109,14 +109,14 @@ checkup_transfer_shiny <- function(qportal_report_filepath,
 
 
 ui <- fluidPage(
-  titlePanel("Check transfer completeness - qPortal"),
+  titlePanel("Check transfer status to the qPortal"),
   sidebarLayout(
     sidebarPanel(
       fileInput("qportal", "qPortal report (.tsv)", accept = c('.tsv', '.txt')),
-      fileInput("demux", "Demultiplexed files (.txt) (optional)", accept = c('.tsv', '.txt')),
-      textInput("transfer_date", "Transfer date (YYYYMMDD) or range (YYYYMMDD-YYYYMMDD)", value = "20251027"),
+      fileInput("demux", "(Optional) Demultiplexed filenames (.txt)", accept = c('.tsv', '.txt')),
+      textInput("transfer_date", "Transfer date (YYYYMMDD) or data range (YYYYMMDD-YYYYMMDD)", value = "20251027"),
       textInput("qbic_prefix", "QBIC barcode prefix (optional)", value = "Q2181"),
-      textInput("ncct_folder", "NCCT input folder (optional, used when demultiplexed file not provided)", value = "../test_data/fastq_transfer/"),
+      textInput("ncct_folder", "NCCT input folder (Optional: Required if demultiplexed filenames not provided)",value = "../test_data/fastq_transfer/"),
       textInput("log_dir", "Log directory", value = "shiny_logs"),
       actionButton("run", "Run checkup"),
       actionButton("demo", "Run demo (test_data)"),
@@ -124,15 +124,16 @@ ui <- fluidPage(
     ),
     mainPanel(
       verbatimTextOutput("summary"),
-      h4("Output table"),
-      DT::dataTableOutput("out_table"),
       h4("Missing files"),
       DT::dataTableOutput("missing_table"),
       h4("Duplicated files"),
       DT::dataTableOutput("dup_table"),
-      downloadButton("download_output", "Download output table (TSV)"),
-      downloadButton("download_missing", "Download missing files"),
-      downloadButton("download_dup", "Download duplicated files")
+      h4("Output table"),
+      DT::dataTableOutput("out_table"),
+
+      downloadButton("download_output", "Download output table (.TSV)"),
+      downloadButton("download_missing", "Download missing files (.TSV)"),
+      downloadButton("download_dup", "Download duplicated files (.TSV)")
     )
   )
 )
