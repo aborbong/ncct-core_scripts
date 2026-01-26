@@ -14,7 +14,9 @@ mkdir -p $OUTPUT_FOLDER
 log_message() {
     local message="$1"
     if [ -n "$LOG_FILE" ]; then
-        echo "$message" | tee -a "$LOG_FILE"
+        # append to logfile and also print to stdout
+        echo "$(date +"%Y-%m-%d %H:%M:%S") - $message" >> "$LOG_FILE"
+        echo "$message"
     else
         echo "$message"
     fi
@@ -24,8 +26,8 @@ log_message() {
 # Concatenate all pass.fastq.gz files
 #####----------------------------------
 
-#Print starting time
-log_message "Process for pass.fastq.gz files started at $(date)" >> "$LOG_FILE"
+# Print starting time
+log_message "Process for pass.fastq.gz files started at $(date)"
 
 
 # Loop to concatenate files and print processing time per sample
@@ -34,8 +36,8 @@ for i in $INPUT_FOLDER_PASS/barcode*/; do
 	#Extract barcode name
 	barcode=$(basename "$i")
 	
-	#Print log message
-	log_message "Processing barcode:$barcode" > "$LOG_FILE"
+    # Print log message
+    log_message "Processing barcode:$barcode"
 	
 	#Print start time
 	start_time=$(date +%s)
@@ -63,13 +65,13 @@ for i in $INPUT_FOLDER_PASS/barcode*/; do
 	#Calculate duration of the concatenation
 	total_duration=$((finish_time - start_time))
 
-	#Print duration	
-	log_message "Finished processing barcode: $barcode in $total_duration seconds" >> "$LOG_FILE"
+    # Print duration
+    log_message "Finished processing barcode: $barcode in $total_duration seconds"
 
 done
 
-#Print finish time
-log_message "Process for pass fastq files finished at $(date)" >> "$LOG_FILE"
+# Print finish time
+log_message "Process for pass fastq files finished at $(date)"
 
 
 ######----------------------------
@@ -77,8 +79,8 @@ log_message "Process for pass fastq files finished at $(date)" >> "$LOG_FILE"
 #####-----------------------------
 
 
-#Print starting time
-log_message "Process for fail.fastq.gz files started at $(date)" >> "$LOG_FILE"
+# Print starting time
+log_message "Process for fail.fastq.gz files started at $(date)"
 
 
 # Loop to concatenate files and print processing time per sample
@@ -87,8 +89,8 @@ for i in $INPUT_FOLDER_FAIL/barcode*/; do
         #Extract barcode name
         barcode=$(basename "$i")
 
-        #Print log message
-        log_message "Processing barcode:$barcode" >> "$LOG_FILE"
+    # Print log message
+    log_message "Processing barcode:$barcode"
 
         #Print start time
         start_time=$(date +%s)
@@ -106,19 +108,15 @@ for i in $INPUT_FOLDER_FAIL/barcode*/; do
             gzip -dc "${files[@]}" | eval $COMPRESS_CMD > "$OUTPUT_FOLDER/${barcode}_fail.fastq.gz"
         fi
 
-        #Print finish time
-        finish_time=$(date +%s)
-
-        #Calculate duration of the concatenation
-        total_duration=$((finish_time - start_time))
-
-        #Print duration
-        log_message "Finished processing barcode: $barcode in $total_duration seconds" >> "$LOG_FILE"
+    # Print finish time and duration
+    finish_time=$(date +%s)
+    total_duration=$((finish_time - start_time))
+    log_message "Finished processing barcode: $barcode in $total_duration seconds"
 
 done
 
-#Print finish time
-log_message "Process for fail fastq files finished at $(date)" >> "$LOG_FILE"
+# Print finish time
+log_message "Process for fail fastq files finished at $(date)"
 
 
 #-------------------------------------------
@@ -150,7 +148,7 @@ while IFS=$'\t' read -r barcode sample_name; do
 done < "$mapfile"
 
 
-log_message "Renaming process completed at $(date)" >> "$LOG_FILE"
-log_message "All processes completed successfully!" >> "$LOG_FILE"
+log_message "Renaming process completed at $(date)"
+log_message "All processes completed successfully!"
 exit 0
 
