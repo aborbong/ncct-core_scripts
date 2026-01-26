@@ -16,12 +16,12 @@ echo -e "sample\telapsed_seconds" > $LOG_FILE
 
 #Run NanoPlot in parallel for all fastq.gz files in the input folder
 ls $INPUT_FOLDER/*.fastq.gz | parallel '
-    sample={/.}
+    sample= $(basename {} .fastq.gz)
     start=$(date +%s)
 
     NanoPlot --fastq {} \
-             --outdir $OUTPUT_FOLDER/$sample \
-             --title $sample \
+             --outdir $OUTPUT_FOLDER/${sample} \
+             --title ${sample} \
              -t 10 \
              --prefix ${sample}_
 
