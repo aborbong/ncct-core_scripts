@@ -26,7 +26,7 @@ checkup_transfer = function(qportal_report_filepath,
 
   ## List files in the ncct input folder if provided, select only those with the qbic barcode prefix and .fastq.fz or .fq.gz extension
   if(is.null(demultiplexed_files_filepath)) {
-    demultiplexed_files = data.frame(ncct_filename = list.files(ncct_input_folder,pattern = paste0("^",qbic_barcode_prefix,"*fastq.gz$|^",qbic_barcode_prefix,"*fg.gz$")))
+    demultiplexed_files = data.frame(ncct_filename = list.files(ncct_input_folder,pattern = paste0("^", qbic_barcode_prefix, ".*\\.(fastq|fq)\\.gz$")))
     print(head(demultiplexed_files))
   }
   else {
@@ -182,14 +182,14 @@ checkup_transfer(qportal_report_filepath,demultiplexed_files_filepath,transfer_d
 # Change working directory to the notebook location
 #setwd("/Users/mustermann/Documents/NCCT/Git_ncct/ncct-core_scripts/notebooks/")
 
-qportal_report_filepath = "../test_data/251112_NCCT_VOOLSTRA_Q2181_Raw_Data_duplicates.tsv"
+qportal_report_filepath = "test_data/251112_NCCT_VOOLSTRA_Q2181_Raw_Data_duplicates.tsv"
     
-demultiplexed_files_filepath = "../test_data/demultiplexed_files.txt"
+demultiplexed_files_filepath = "test_data/demultiplexed_files.txt"
 
 checkup_transfer(qportal_report_filepath,
-                  demultiplexed_files_filepath = demultiplexed_files_filepath,
+                  #demultiplexed_files_filepath = demultiplexed_files_filepath,
                   transfer_date = "20251027", 
                   log_dir = "test_output",
                   qbic_barcode_prefix = "Q2181",
-                  ncct_input_folder = "../test_data/fastq_transfer/"
+                  ncct_input_folder = "test_data/fastq_transfer/"
                   )
