@@ -20,12 +20,21 @@ checkup_transfer_shiny <- function(qportal_report_filepath,
     stop("qPortal report file not provided or does not exist")
   }
 
-  ## Import or list demultiplexed files
+   ## List files in the ncct input folder if provided, select only those with the qbic barcode prefix and .fastq.fz or .fq.gz extension
   if(is.null(demultiplexed_files_filepath)) {
-    if(is.null(ncct_input_folder)) stop("Either demultiplexed_files_filepath or ncct_input_folder must be provided")
-    demultiplexed_files <- data.frame(ncct_filename = list.files(ncct_input_folder, pattern = paste0("^", qbic_barcode_prefix, "*fastq.gz$|^", qbic_barcode_prefix, "*fg.gz$")))
-  } else {
-    demultiplexed_files <- suppressMessages(read_tsv(demultiplexed_files_filepath, col_names = "ncct_filename"))
+    demultiplexed_files <- data.frame(
+      ncct_filename = list.files(
+        ncct_input_folder,
+        pattern = paste0("^", qbic_barcode_prefix, ".*\\.(fastq|fq)\\.gz$")
+        )
+      )
+
+  }
+  else {
+    #Import list of demultiplexed files and rename columns
+    demultiplexed_files = suppressMessages(
+      read_tsv(demultiplexed_files_filepath,col_names = "ncct_filename")
+    )
   }
 
   ## Import qportal .tsv report and rename columns
@@ -39,6 +48,7 @@ checkup_transfer_shiny <- function(qportal_report_filepath,
     transfer_qportal <- qportal_report %>%
       filter(str_detect(name, paste0("_(", paste0(start_date, "|", end_date), ")\\d{6}_"))) %>%
       mutate(ncct_filename = str_remove(name, "_\\d{14}_"))
+      print(transfer_qportal$ncct_filename)
   } else {
     transfer_qportal <- qportal_report %>%
       filter(str_detect(name, paste0("_", transfer_date, "\\d{6}_"))) %>%
@@ -68,7 +78,7 @@ checkup_transfer_shiny <- function(qportal_report_filepath,
   dup_file_out <- paste0(log_base, "_duplicates.txt")
 
   log_lines <- character()
-  log_lines <- c(log_lines, paste0("Transfer Completeness report: ", Sys.time()))
+  log_lines <- c(log_lines, paste0("Transfer Status Report: ", Sys.time()))
   log_lines <- c(log_lines, paste0("Transfer date: ", transfer_date))
   log_lines <- c(log_lines, paste0("QBIC barcode prefix: ", qbic_barcode_prefix))
   log_lines <- c(log_lines, paste0("Input folder: ", ncct_input_folder))
@@ -94,6 +104,8 @@ checkup_transfer_shiny <- function(qportal_report_filepath,
 
   result <- list(
     n_files_ncct = n_files_ncct,
+    ncct_input_folder = ncct_input_folder,
+    qbic_barcode_prefix = qbic_barcode_prefix,
     n_files_qportal = n_files_qportal,
     missing_files = missing_files,
     duplicated_files = duplicated_files,
@@ -101,10 +113,12 @@ checkup_transfer_shiny <- function(qportal_report_filepath,
     total_unique_files = total_unique_files,
     output_table = output_table,
     log_lines = log_lines,
+    demultiplexed_files = demultiplexed_files,
     log_paths = list(log_file = log_file, missing_file = missing_file_out, dup_file = dup_file_out)
   )
 
   return(result)
+
 }
 
 
@@ -116,7 +130,7 @@ ui <- fluidPage(
       fileInput("demux", "Demultiplexed files (.txt) (optional)", accept = c('.tsv', '.txt')),
       textInput("transfer_date", "Transfer date (YYYYMMDD) or range (YYYYMMDD-YYYYMMDD)", value = "20251027"),
       textInput("qbic_prefix", "QBIC barcode prefix (optional)", value = "Q2181"),
-      textInput("ncct_folder", "NCCT input folder (optional, used when demultiplexed file not provided)", value = "../test_data/fastq_transfer/"),
+      textInput("ncct_folder", "NCCT input folder (optional, used when demultiplexed file not provided)", value = "/home/sysgen/Desktop/ncct-projects/"),
       textInput("log_dir", "Log directory", value = "shiny_logs"),
       actionButton("run", "Run checkup"),
       actionButton("demo", "Run demo (test_data)"),
@@ -131,8 +145,8 @@ ui <- fluidPage(
       h4("Duplicated files"),
       DT::dataTableOutput("dup_table"),
       downloadButton("download_output", "Download output table (TSV)"),
-      downloadButton("download_missing", "Download missing files"),
-      downloadButton("download_dup", "Download duplicated files")
+      downloadButton("download_missing", "Download missing files (TSV)"),
+      downloadButton("download_dup", "Download duplicated files (TSV)")
     )
   )
 )
@@ -147,6 +161,9 @@ server <- function(input, output, session){
     demux_path <- NULL
     if(!is.null(input$demux)) demux_path <- input$demux$datapath
 
+    qbic_prefix_val <- if (input$qbic_prefix == "") NULL else input$qbic_prefix
+    ncct_folder_val <- if (input$ncct_folder == "") NULL else input$ncct_folder
+
     # call the function
     res <- tryCatch({
       rr <- checkup_transfer_shiny(
@@ -154,8 +171,8 @@ server <- function(input, output, session){
         demultiplexed_files_filepath = demux_path,
         transfer_date = input$transfer_date,
         log_dir = input$log_dir,
-        qbic_barcode_prefix = ifelse(input$qbic_prefix=="", NULL, input$qbic_prefix),
-        ncct_input_folder = ifelse(input$ncct_folder=="", NULL, input$ncct_folder)
+        qbic_barcode_prefix = input$qbic_prefix,
+        ncct_input_folder = input$ncct_folder
       )
       list(success = TRUE, res = rr)
     }, error = function(e){
@@ -169,14 +186,17 @@ server <- function(input, output, session){
     # Use test_data shipped in repository (relative to app directory)
     demo_qportal <- normalizePath(file.path("..", "..", "test_data", "251112_NCCT_VOOLSTRA_Q2181_Raw_Data.tsv"), mustWork = FALSE)
     demo_demux <- normalizePath(file.path("..", "..", "test_data", "demultiplexed_files.txt"), mustWork = FALSE)
+   
+ 
+
     res <- tryCatch({
       rr <- checkup_transfer_shiny(
         qportal_report_filepath = demo_qportal,
         demultiplexed_files_filepath = demo_demux,
         transfer_date = input$transfer_date,
         log_dir = input$log_dir,
-        qbic_barcode_prefix = ifelse(input$qbic_prefix=="", NULL, input$qbic_prefix),
-        ncct_input_folder = NULL
+        qbic_barcode_prefix = input$qbic_prefix,
+        ncct_input_folder = input$ncct_folder
       )
       list(success = TRUE, res = rr)
     }, error = function(e){
@@ -192,7 +212,7 @@ server <- function(input, output, session){
     if(!r$success) return(paste0("Error: ", r$message))
     res <- r$res
     paste0(
-      "Transfer Completeness Summary:\n",
+      "Transfer Status Summary:\n",
       "-----------------------------------\n",
       "Transfer date: ", input$transfer_date, "\n",    
       "Files present in the source folder at NCCT: ", res$n_files_ncct, "\n",
@@ -226,6 +246,14 @@ server <- function(input, output, session){
     DT::datatable(data.frame(duplicated = r$res$duplicated_files), options = list(pageLength = 10))
   })
 
+
+  output$demultiplexed_files <- DT::renderDataTable({
+    r <- last_result()
+    req(r)
+    if(!r$success) return(NULL)
+    DT::datatable(data.frame(demultiplexed = r$res$demultiplexed_files), options = list(pageLength = 10))
+  })
+
   output$download_output <- downloadHandler(
     filename = function(){ paste0('checkup_output_', Sys.Date(), '.tsv') },
     content = function(file){
@@ -249,6 +277,8 @@ server <- function(input, output, session){
       writeLines(r$res$duplicated_files, con = file)
     }
   )
+
+  
 
 }
 
