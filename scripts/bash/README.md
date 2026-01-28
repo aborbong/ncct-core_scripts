@@ -10,7 +10,6 @@ Contents
 - `check_fastq_compression.sh` — (utility) checks compression of FASTQ files (report valid / corrupted files).
 - `rename_fastq.sh` — (utility) rename FASTQ files according to a mapping or pattern.
 - `transfer_batches_time_report.sh` — produce a time report for transfer batches.
-- `corrupted_fastq_files.txt`, `valid_fastq_files.txt`, `transferred_files.log` — example output/log files used by some scripts or tests.
 
 Notes: some scripts are expected to be maintained and extended in the repo. If you plan to run them on your system, read the details for the most important scripts below.
 
@@ -42,9 +41,6 @@ Notes & recommendations
   - If you need faster behavior and are certain your downstream tools accept multi-member gz, you can replace the recompression with `cat ${files[@]} > out.gz` but be aware of portability caveats.
   - The script now appends timestamps to the log file and avoids accidental overwrites.
 
-Troubleshooting
-:  - "zcat: can't stat: ... No such file or directory" — indicates the glob didn't match any files; check the input path and confirm files exist. The script now checks for this case and logs a skip.
-  - If rename conflicts happen (target exists), the current behavior is to `mv -f` (overwrite). Modify if you want skipping instead.
 
 run_nanoplot.sh
 ---------------
@@ -68,42 +64,13 @@ Notes & improvements
 check_fastq_compression.sh and rename_fastq.sh
 ----------------------------------------------
 These are helper utilities; read the top of each script for usage and options. Typical uses:
-- `check_fastq_compression.sh <folder> [out.txt]` — scan for files that fail gzip checks and list them.
+- `check_fastq_compression.sh <folder> [out.txt]` — scan for files that fail gzip checks and list them. If all files are valid (no corrupt or truncated files), it starts the transfer to the Datamover. 
+
+rename_fastq.sh
+-------------------------------
 - `rename_fastq.sh <mapping_file> <fastq_dir>` — rename fastq files according to tab-delimited mapping.
 
 transfer_batches_time_report.sh
 -------------------------------
-Generate a human-friendly report about batch transfer durations. Read the script header to see expected input files (logs produced during transfer) and output formats.
+Runs the data transfer in batches with time gaps in between. It also generates a human-friendly report about batch transfer durations. Read the script header to see expected input files (logs produced during transfer) and output formats.
 
-General notes
--------------
-- Shell compatibility: scripts use bash features like arrays and `[[ ]]`. Use bash (`/usr/bin/env bash`) to run them.
-- Logging: Many scripts accept an optional `LOG_FILE` path and use a `log_message()` helper. Provide an absolute path if you run scheduled jobs so you don't confuse relative paths.
-- Dry-run: For destructive operations (concatenate/rename), test with `--dry-run` style behavior — either run a copy of the script that echoes commands instead of running them, or test in the `test_data` directory included in the repo.
-- Dependencies: `gzip`/`pigz`, `parallel`, `NanoPlot`, standard POSIX tools (awk/sed). On macOS `zcat` may be named `gzcat`, so prefer `gzip -dc` for portability.
-
-Testing with repo test data
---------------------------
-This repo includes `test_data/` with small example inputs. Example test command from the repo root:
-
-```bash
-./scripts/bash/concatenate_nanopore_files.sh test_data/nanopore_test/test_pass test_data/nanopore_test/test_fail test_data/nanopore_test/test_output test_data/nanopore_test/map_file_nanopore.tsv test.log
-```
-
-After generating outputs you can run NanoPlot in dry-run (or real run) using:
-
-```bash
-./scripts/bash/run_nanoplot.sh test_data/nanopore_test/test_output test_data/nanopore_test/test_output_nanoplot nanoplot.log
-```
-
-If you run NanoPlot for real, ensure your environment has NanoPlot and GNU parallel installed.
-
-Contributing / improvements
----------------------------
-- Consider adding a `--dry-run` / `--force` flags to scripts that perform destructive changes.
-- Use `getopt` or `argbash` to provide a more robust CLI and help message.
-- Add unit tests (small fastq samples) and a CI job that runs the scripts in dry-run mode.
-
-License / authorship
---------------------
-These scripts are part of the `ncct-core_scripts` repository. See the repo top-level `LICENSE` and `README.md` for license and author details.
