@@ -1,0 +1,23 @@
+All processes completed successfully!
+2026-01-26 15:44:55 - Process for pass.fastq.gz files started at Mon Jan 26 15:44:55 CET 2026
+2026-01-26 15:44:55 - Processing barcode:barcode01
+2026-01-26 15:44:55 - Finished processing barcode: barcode01 in 0 seconds
+2026-01-26 15:44:55 - Processing barcode:barcode02
+2026-01-26 15:44:56 - Finished processing barcode: barcode02 in 1 seconds
+2026-01-26 15:44:56 - Processing barcode:barcode03
+2026-01-26 15:44:56 - Finished processing barcode: barcode03 in 0 seconds
+2026-01-26 15:44:56 - Processing barcode:barcode04
+2026-01-26 15:44:56 - Finished processing barcode: barcode04 in 0 seconds
+2026-01-26 15:44:56 - Process for pass fastq files finished at Mon Jan 26 15:44:56 CET 2026
+2026-01-26 15:44:56 - Process for fail.fastq.gz files started at Mon Jan 26 15:44:56 CET 2026
+2026-01-26 15:44:56 - Processing barcode:barcode01
+2026-01-26 15:44:56 - Finished processing barcode: barcode01 in 0 seconds
+2026-01-26 15:44:56 - Processing barcode:barcode02
+2026-01-26 15:44:56 - Finished processing barcode: barcode02 in 0 seconds
+2026-01-26 15:44:56 - Processing barcode:barcode03
+2026-01-26 15:44:57 - Finished processing barcode: barcode03 in 1 seconds
+2026-01-26 15:44:57 - Processing barcode:barcode04
+2026-01-26 15:44:57 - Finished processing barcode: barcode04 in 0 seconds
+2026-01-26 15:44:57 - Process for fail fastq files finished at Mon Jan 26 15:44:57 CET 2026
+2026-01-26 15:44:57 - Renaming process completed at Mon Jan 26 15:44:57 CET 2026
+2026-01-26 15:44:57 - All processes completed successfully!
